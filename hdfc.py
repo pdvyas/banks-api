@@ -36,15 +36,21 @@ class hdfc:
 		html = self.br.response().read()
 		soup = 	BeautifulSoup(html)
 		# Return authentication info
-		return {
-		'phrase':soup.findAll('input',{'name':'fldRSAUserPhrase'})[0]['value'],
-		'image':soup.findAll('img')[1]['src']
-		}
+		try:
+			return {
+			'phrase':soup.findAll('input',{'name':'fldRSAUserPhrase'})[0]['value'],
+			'image':soup.findAll('img')[1]['src']
+			}
+		except IndexError:
+			print 'You should get the secure access setup sometime'
 
 	def login(self,password):
 		self.br.select_form('frmLogon')
 		self.br.form['fldPassword']=password
-		self.br.find_control('fldCheck').items[0].selected=True
+		try:
+			self.br.find_control('fldCheck').items[0].selected=True
+		except mechanize._form.ControlNotFoundError:
+			print 'Warning : No secure access'
 		self.br.submit()
 		self.state = "logged in"
 	
