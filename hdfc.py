@@ -46,10 +46,14 @@ class hdfc:
 		self.br.form['fldPassword']=password
 		self.br.find_control('fldCheck').items[0].selected=True
 		self.br.submit()
-		print self.br.response().read()
 		self.state = "logged in"
 	
 	def get_accounts(self):
+		if self.state=='logged in':	
+			self.br.select_form('frm_menu_accounts_ASM')
+			self.br.submit()
+			html = self.br.response().read()
+			return html
 		pass
 	
 	def get_account_statement(self,ac_no):
