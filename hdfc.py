@@ -59,6 +59,9 @@ class hdfc:
 			self.br.select_form('frm_menu_accounts_ASM')
 			self.br.submit()
 			html = self.br.response().read()
+			#Get back to the main menu
+			self.br.select_form('frmbacktomenu')
+			self.br.submit()
 			return html
 		pass
 	
