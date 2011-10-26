@@ -1,7 +1,9 @@
 import getpass
 from hdfc import hdfc
-h = hdfc('1572332')
-h.start()
+import pprint 
+h = hdfc(raw_input('Enter cust_id : '))
+print "Here are your Secure Access credentials"
+print h.start()
 h.login(getpass.getpass())
-print h.get_accounts()
+pprint.pprint(h.get_accounts())
 h.logout()

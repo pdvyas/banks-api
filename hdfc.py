@@ -1,4 +1,5 @@
 import mechanize
+import html2text
 import cookielib
 from BeautifulSoup import BeautifulSoup
 
@@ -62,7 +63,7 @@ class hdfc:
 			#Get back to the main menu
 			self.br.select_form('frmbacktomenu')
 			self.br.submit()
-			return html
+			return self.parse_accounts(html)
 		pass
 	
 	def get_account_statement(self,ac_no):
@@ -75,7 +76,17 @@ class hdfc:
 		pass
 	
 	def parse_accounts(self,html):
-		pass
+		soup = BeautifulSoup(html)
+		tables = soup.findAll('table',{'class':'tabdtl'})
+		ret=[]
+		for table in tables:
+			rec = {}
+			rows = table.findAll('tr')
+			for row in rows:
+				cols = row.findAll('td')
+				rec.update( { html2text.html2text(cols[0].find(text=True)).strip('\n:') :  html2text.html2text(cols[1].find(text=True)).strip('\n:') })
+			ret.append(rec)
+		return ret
 	
 	def parse_account_statement(self,html):
 		pass
