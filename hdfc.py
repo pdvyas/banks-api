@@ -57,23 +57,33 @@ class hdfc:
 	
 	def get_accounts(self):
 		if self.state=='logged in':	
+			self.state = "out"
 			self.br.select_form('frm_menu_accounts_ASM')
 			self.br.submit()
 			html = self.br.response().read()
-			#Get back to the main menu
-			self.br.select_form('frmbacktomenu')
-			self.br.submit()
+			self.ret_to_menu()
 			return self.parse_accounts(html)
 		pass
 	
-	def get_account_statement(self,ac_no):
-		pass
-	
+	def get_account_statement(self,ac_no,st_type='mini'):
+		self.state = "out"
+		self.br.select_form('frm_menu_accounts_SIN')
+		self.br.submit()
+		self.br.select_form('frmTxn')
+		self.br.form.set_all_readonly(False)
+		if st_type=='mini':
+			self.br.form['fldAcctNo']=ac_no+'++'
+			self.br.form['fldNbrStmt']='20'
+			self.br.form['fldTxnType'] = 'A'
+			self.br.form['radTxnType'] = ['C']
+		self.br.submit()
+		html = self.br.response().read();
+		self.ret_to_menu()
+		return self.parse_account_statement(html)
+			
 	def logout(self):
 		self.br.select_form('frmlogoff')
 		self.br.submit()
-
-		pass
 	
 	def parse_accounts(self,html):
 		soup = BeautifulSoup(html)
@@ -89,4 +99,17 @@ class hdfc:
 		return ret
 	
 	def parse_account_statement(self,html):
-		pass
+		ret = []
+		soup = BeautifulSoup(html)
+		for table in soup.findAll('table',{'class':'tableRd'}):
+			rec = {}
+			for row in table.findAll('tr'):
+				cols = row.findAll('td')
+				rec.update( { html2text.html2text(cols[0].find(text=True)).strip('\n:') :  html2text.html2text(cols[1].find(text=True)).strip('\n:') })
+			ret.append(rec)
+		return ret
+	
+	def ret_to_menu(self):
+		self.br.select_form('frmbacktomenu')
+		self.br.submit()
+		self.state = "logged in"
