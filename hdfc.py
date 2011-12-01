@@ -1,3 +1,4 @@
+import datetime
 import mechanize
 import html2text
 import cookielib
@@ -35,7 +36,7 @@ class hdfc:
 		self.br.submit()
 		self.state = "started"
 		html = self.br.response().read()
-		soup = 	BeautifulSoup(html)
+		soup =	BeautifulSoup(html)
 		# Return authentication info
 		try:
 			return {
@@ -65,13 +66,20 @@ class hdfc:
 			return self.parse_accounts(html)
 		pass
 	
-	def get_account_statement(self,ac_no,st_type='mini'):
+	def get_account_statement(self,ac_no,st_type,from_date, to_date):
 		self.state = "out"
 		self.br.select_form('frm_menu_accounts_SIN')
 		self.br.submit()
 		self.br.select_form('frmTxn')
 		self.br.form.set_all_readonly(False)
 		if st_type=='mini':
+			self.br.form['fldAcctNo']=ac_no+'++'
+			self.br.form['fldNbrStmt']='20'
+			self.br.form['fldTxnType'] = 'A'
+			self.br.form['radTxnType'] = ['C']
+		else:
+			self.br.form['fldFromDate']=from_date.strftime("%d%%2F%m%%2F%Y")
+			self.br.form['fldToDate']=to_date.strftime("%d%%2F%m%%2F%Y")
 			self.br.form['fldAcctNo']=ac_no+'++'
 			self.br.form['fldNbrStmt']='20'
 			self.br.form['fldTxnType'] = 'A'
