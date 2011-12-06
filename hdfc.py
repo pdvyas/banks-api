@@ -72,22 +72,32 @@ class hdfc:
 		self.br.submit()
 		self.br.select_form('frmTxn')
 		self.br.form.set_all_readonly(False)
-		if st_type=='mini':
-			self.br.form['fldAcctNo']=ac_no+'++'
-			self.br.form['fldNbrStmt']='20'
-			self.br.form['fldTxnType'] = 'A'
-			self.br.form['radTxnType'] = ['C']
-		else:
+		self.br.form['fldAcctNo']=ac_no+'++'
+		self.br.form['fldNbrStmt']='20'
+		self.br.form['fldTxnType'] = 'A'
+		self.br.form['radTxnType'] = ['C']
+		if st_type!='mini':
 			self.br.form['fldFromDate']=from_date.strftime("%d%%2F%m%%2F%Y")
 			self.br.form['fldToDate']=to_date.strftime("%d%%2F%m%%2F%Y")
-			self.br.form['fldAcctNo']=ac_no+'++'
-			self.br.form['fldNbrStmt']='20'
-			self.br.form['fldTxnType'] = 'A'
-			self.br.form['radTxnType'] = ['C']
 		self.br.submit()
 		html = self.br.response().read();
 		self.ret_to_menu()
-		return self.parse_account_statement(html)
+		txns = self.parse_account_statement(html)
+		txns=map(self.map_transaction_keys,txns)
+		return txns
+	
+	def map_transaction_keys(self,txn):
+		ret = {}
+		ret['ref_no'] = txn[u'Cheque/Ref No']
+		ret['narration']=txn[u'Narration']
+		ret['date']=txn[u'Transaction Date']
+		if u'Withdrawal' in txn.keys():
+			ret['t_type']='d'
+			ret['amount']=float(txn[u'Withdrawal'])
+		else:
+			ret['t_type']='c'
+			ret['amount']=float(txn[u'Deposit'])
+		return ret
 			
 	def logout(self):
 		self.br.select_form('frmlogoff')
