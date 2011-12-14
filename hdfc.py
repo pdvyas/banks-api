@@ -2,6 +2,7 @@ import datetime
 import mechanize
 import html2text
 import cookielib
+import hashlib
 from BeautifulSoup import BeautifulSoup
 
 class hdfc:
@@ -63,7 +64,9 @@ class hdfc:
 			self.br.submit()
 			html = self.br.response().read()
 			self.ret_to_menu()
-			return self.parse_accounts(html)
+			acs = self.parse_accounts(html)
+			acs = map(self.map_account_keys,acs)
+			return acs
 		pass
 	
 	def get_account_statement(self,ac_no,st_type,from_date, to_date):
@@ -86,10 +89,18 @@ class hdfc:
 		txns=map(self.map_transaction_keys,txns)
 		return txns
 	
+	def map_account_keys(self,ac):
+		ret = {}
+		ret['ac_no']=ac[u'Account Number']
+		ret['balance']=float(ac[u'Available Balance'])
+		ret['id'] = self.genid(ret)
+		return ret
+	
 	def map_transaction_keys(self,txn):
 		ret = {}
 		ret['ref_no'] = txn[u'Cheque/Ref No']
 		ret['narration']=txn[u'Narration']
+		ret['bal']=txn[u'Balance']
 		ret['date']=txn[u'Transaction Date']
 		if u'Withdrawal' in txn.keys():
 			ret['t_type']='d'
@@ -97,7 +108,11 @@ class hdfc:
 		else:
 			ret['t_type']='c'
 			ret['amount']=float(txn[u'Deposit'])
+		ret['id'] = self.genid(ret)
 		return ret
+
+	def genid(self,dic):
+		return hashlib.md5(str().join(map(str,dic.values()))).hexdigest()
 			
 	def logout(self):
 		self.br.select_form('frmlogoff')
