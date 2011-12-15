@@ -6,6 +6,7 @@ import hashlib
 from BeautifulSoup import BeautifulSoup
 
 class hdfc:
+	__bank__= 'hdfc'
 	def __init__(self,cust_id):
 		self.state = "uninitiated"
 		self.cust_id = cust_id
@@ -86,18 +87,21 @@ class hdfc:
 		html = self.br.response().read();
 		self.ret_to_menu()
 		txns = self.parse_account_statement(html)
-		txns=map(self.map_transaction_keys,txns)
+		ac_id = self.genid({'acno': ac_no, 'bank' : self.__bank__ })
+		txns = [self.map_transaction_keys(x,ac_id) for x in txns]
 		return txns
 	
 	def map_account_keys(self,ac):
 		ret = {}
 		ret['ac_no']=ac[u'Account Number']
-		ret['balance']=float(ac[u'Available Balance'])
+		ret['bank'] = self.__bank__
 		ret['id'] = self.genid(ret)
+		ret['balance']=float(ac[u'Available Balance'])
 		return ret
 	
-	def map_transaction_keys(self,txn):
+	def map_transaction_keys(self,txn,ac_id):
 		ret = {}
+		ret['ac_id'] = ac_id
 		ret['ref_no'] = txn[u'Cheque/Ref No']
 		ret['narration']=txn[u'Narration']
 		ret['bal']=txn[u'Balance']
