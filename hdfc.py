@@ -2,6 +2,7 @@ import datetime
 import mechanize
 import html2text
 import cookielib
+import dateutil.parser
 import hashlib
 from BeautifulSoup import BeautifulSoup
 from common import genid
@@ -106,7 +107,7 @@ class Bank:
 		ret['ref_no'] = txn[u'Cheque/Ref No']
 		ret['narration']=txn[u'Narration']
 		ret['bal']=txn[u'Balance']
-		ret['date']=txn[u'Transaction Date']
+		ret['date']=dateutil.parser.parse(txn[u'Transaction Date']).date()
 		if u'Withdrawal' in txn.keys():
 			ret['t_type']='d'
 			ret['amount']=float(txn[u'Withdrawal'])
