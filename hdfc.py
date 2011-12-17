@@ -4,8 +4,9 @@ import html2text
 import cookielib
 import hashlib
 from BeautifulSoup import BeautifulSoup
+from common import genid
 
-class hdfc:
+class Bank:
 	__bank__= 'hdfc'
 	def __init__(self,cust_id):
 		self.state = "uninitiated"
@@ -87,7 +88,7 @@ class hdfc:
 		html = self.br.response().read();
 		self.ret_to_menu()
 		txns = self.parse_account_statement(html)
-		ac_id = self.genid({'acno': ac_no, 'bank' : self.__bank__ })
+		ac_id = genid({'acno': ac_no, 'bank' : self.__bank__ })
 		txns = [self.map_transaction_keys(x,ac_id) for x in txns]
 		return txns
 	
@@ -95,7 +96,7 @@ class hdfc:
 		ret = {}
 		ret['ac_no']=ac[u'Account Number']
 		ret['bank'] = self.__bank__
-		ret['id'] = self.genid(ret)
+		ret['id'] = genid(ret)
 		ret['balance']=float(ac[u'Available Balance'])
 		return ret
 	
@@ -112,12 +113,9 @@ class hdfc:
 		else:
 			ret['t_type']='c'
 			ret['amount']=float(txn[u'Deposit'])
-		ret['id'] = self.genid(ret)
+		ret['id'] = genid(ret)
 		return ret
 
-	def genid(self,dic):
-		return hashlib.md5(str().join(map(str,dic.values()))).hexdigest()
-			
 	def logout(self):
 		self.br.select_form('frmlogoff')
 		self.br.submit()
