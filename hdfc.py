@@ -4,6 +4,7 @@ import html2text
 import cookielib
 import dateutil.parser
 import hashlib
+import re
 from BeautifulSoup import BeautifulSoup
 from common import genid
 
@@ -91,7 +92,55 @@ class Bank:
 		txns = self.parse_account_statement(html)
 		ac_id = genid({'acno': ac_no, 'bank' : self.__bank__ })
 		txns = [self.map_transaction_keys(x,ac_id) for x in txns]
+		txns = [self.process_txn(x) for x in txns]
 		return txns
+
+	def process_txn(self,txn):
+		
+		narr = txn['narration']
+		ttype = narr[:3]
+		ret = {
+			'ttype' : ttype
+		}
+
+		def atw():
+			match = re.search(r'ATW-(\d*).-(.*)',narr)
+			ret['card'] = match.group(1)
+			ret['place'] = match.group(2)
+
+		def ndw():
+			match = re.search(r'NDW-(\d*).*-(.*)',narr)
+			ret['card'] = match.group(1)
+			ret['place'] = match.group(2)
+
+		def pos():
+			match = re.search(r'POS (\d*) (.*)',narr)
+			ret['card'] = match.group(1)
+			ret['merchant'] = match.group(2)
+
+		def xfer():
+			match = re.search(r'IB FUNDS TRANSFER.*-(\d*)',narr)
+			ret['merchant'] = match.group(1)
+
+		def chq():
+			match = re.search(r'Chq.*-.*-(.*)',narr)
+			ret['merchant'] = match.group(1)
+		
+		pat = {
+				'ATW' : atw,
+				'NDW' : ndw,
+				'POS' : pos,
+				'Chq' : chq,
+				'IB ' : xfer
+		}
+
+		try:
+			pat[ttype]()
+		except KeyError:
+			pass
+		txn.update(ret)
+		return txn
+
 	
 	def map_account_keys(self,ac):
 		ret = {}
