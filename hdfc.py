@@ -100,7 +100,10 @@ class Bank:
 		narr = txn['narration']
 		ttype = narr[:3]
 		ret = {
-			'ttype' : ttype
+			'ttype' : ttype,
+			'place' : None,
+			'card' : None,
+			'merchant' : None
 		}
 
 		def atw():
