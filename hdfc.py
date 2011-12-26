@@ -103,7 +103,7 @@ class Bank:
 			'method' : method,
 			'place' : None,
 			'card' : None,
-			'merchant' : None
+			'party' : None
 		}
 
 		def atw():
@@ -119,15 +119,15 @@ class Bank:
 		def pos():
 			match = re.search(r'POS (\d*) (.*)',narr)
 			ret['card'] = match.group(1)
-			ret['merchant'] = match.group(2)
+			ret['party'] = match.group(2)
 
 		def xfer():
 			match = re.search(r'IB FUNDS TRANSFER.*-(\d*)',narr)
-			ret['merchant'] = match.group(1)
+			ret['party'] = match.group(1)
 
 		def chq():
 			match = re.search(r'Chq.*-.*-(.*)',narr)
-			ret['merchant'] = match.group(1)
+			ret['party'] = match.group(1)
 		
 		pat = {
 				'ATW' : atw,
@@ -138,7 +138,7 @@ class Bank:
 		}
 
 		try:
-			pat[ttype]()
+			pat[method]()
 		except KeyError:
 			pass
 		txn.update(ret)
