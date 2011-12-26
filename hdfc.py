@@ -98,9 +98,9 @@ class Bank:
 	def process_txn(self,txn):
 		
 		narr = txn['narration']
-		ttype = narr[:3]
+		method = narr[:3]
 		ret = {
-			'ttype' : ttype,
+			'method' : method,
 			'place' : None,
 			'card' : None,
 			'merchant' : None
