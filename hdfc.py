@@ -124,6 +124,7 @@ class Bank:
 		def xfer():
 			match = re.search(r'IB FUNDS TRANSFER.*-(\d*)',narr)
 			ret['party'] = match.group(1)
+			ret['method'] = 'XFER'
 
 		def chq():
 			match = re.search(r'Chq.*-.*-(.*)',narr)
