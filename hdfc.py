@@ -141,6 +141,7 @@ class Bank:
 		try:
 			pat[method]()
 		except KeyError:
+			pat[method] = None
 			pass
 		txn.update(ret)
 		return txn
